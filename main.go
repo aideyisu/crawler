@@ -26,7 +26,6 @@ var WebSiteHost = "archive.routeviews.org"
 //Func check checks for errors. If any panic and write log.
 func check(s string, e error) {
 	if e != nil {
-
 		log.Fatalln(e)
 	}
 }
@@ -51,7 +50,7 @@ func (wc WriteCounter) PrintProgress() {
 
 	// Return again and print current status of download
 	// We use the humanize package to print the bytes in a meaningful way (e.g. 10 MB)
-	fmt.Printf("\rDownloading... %s complete. Finished ", humanize.Bytes(wc.Total))
+	fmt.Printf("\tDownloading... %s complete. Finished \r\n", humanize.Bytes(wc.Total))
 
 }
 
@@ -131,16 +130,14 @@ func DownloadFile(filename string, u string) {
 	// u, err := url.Parse(URL)
 
 	//Open file and append if it exist. If not create it and write.
-	fmt.Println("开始下载文件-。-")
+
 	newFile, err := os.OpenFile("pages/"+WebSiteHost+"/"+filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	check("Error opening file! ", err)
 	defer newFile.Close()
-	fmt.Println("打开文件成功")
 	response, err := http.Get(u)
-	fmt.Println(response.StatusCode)
-	fmt.Println("响应结束开始判断")
+
 	if response.StatusCode == 404 {
-		fmt.Println("Can't find target URL!\n Please check that inserted URL is valid.")
+		log.Println("Can't find target URL!\n Please check that inserted URL is valid.")
 		os.Exit(1)
 	}
 	if response.StatusCode == 200 {
@@ -149,7 +146,6 @@ func DownloadFile(filename string, u string) {
 
 		ip, err := net.LookupIP(web.Host)
 		check("Error retrieving website's IP address. ", err)
-		fmt.Printf("Connected to %v.\nIP address %v\n", web.Host, ip)
 		log.Printf("Connected to %v.\nIP address %v\n", web.Host, ip)
 
 	}
@@ -206,28 +202,36 @@ func DownloadFile(filename string, u string) {
 
 	})
 	check("", err)
-	fmt.Println("\nCrawling finished.\n Success!")
 	log.Println("\nCrawling finished.\n Success!")
-
 }
 
 func main() {
-	if len(os.Args) != 2 {
+	if len(os.Args) != 6 {
 		fmt.Println("Usage: " + os.Args[0] + " <filename_to_save> <target_URL>")
 		fmt.Println("Example: " + os.Args[0] + " http://archive.routeviews.org/bgpdata/2001.10/UPDATES/ ")
-		log.Fatalln("Not enough arguments passed!")
+		log.Fatalln("Not right number arguments passed!")
 		os.Exit(1)
 	}
 	URL := os.Args[1]
-	begin(URL)
-	// URL := "http://archive.routeviews.org/bgpdata/2003.03/UPDATES/"
-	resp, _ := http.Get(URL)
+	SecondPath := os.Args[2]
+	Year := os.Args[3]
+	Month := os.Args[4]
+	Name := os.Args[5]
+
+	FilePath := URL + "/" + SecondPath + "/" + Year + "." + Month + "/" + Name + "/"
+
+	begin(FilePath)
+	// FilePath := "http://archive.routeviews.org/bgpdata/2003.03/UPDATES/"
+	// ./main http://archive.routeviews.org bgpdata 2003 03 UPDATES
+
+	resp, _ := http.Get(FilePath)
 	links := collectlinks.All(resp.Body)
 	k := 0
 	for _, j := range links {
+
 		if strings.HasPrefix(j, "updates") {
-			fmt.Println(URL + j)
-			DownloadFile(j, URL+j)
+			fmt.Println(FilePath + j)
+			DownloadFile(j, FilePath+j)
 			k = k + 1
 			if k == 5 {
 				break
