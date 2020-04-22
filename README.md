@@ -7,3 +7,5 @@ crawler. Search pages and Downloads files
 ```
 ./main http://archive.routeviews.org bgpdata 2003 03 UPDATES
 ```
+
+数据存储格式为files/yearmonth 目录下存放,可以适应ETL流程

@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/dustin/go-humanize"
 	"github.com/jackdanger/collectlinks"
 )
 
@@ -31,29 +30,16 @@ type WriteCounter struct {
 func (wc *WriteCounter) Write(p []byte) (int, error) {
 	n := len(p)
 	wc.Total += uint64(n)
-	wc.PrintProgress()
 	return n, nil
-}
-
-// PrintProgress 打印中间过程
-func (wc WriteCounter) PrintProgress() {
-	// Clear the line by using a character return to go back to the start and remove
-	// the remaining characters by filling it with spaces
-	fmt.Printf("\r%s", strings.Repeat(" ", 35))
-
-	// Return again and print current status of download
-	// We use the humanize package to print the bytes in a meaningful way (e.g. 10 MB)
-	fmt.Printf("\tDownloading... %s complete. Finished \r\n", humanize.Bytes(wc.Total))
-
 }
 
 //init func initializes directory creation and log tracing.
 func begin(URL string, SecondPath string, Year string, Month string, Name string) {
 
 	dir, err := url.Parse(URL)
-	_, err = os.Stat("files/" + SecondPath + Name + "_" + Year + Month + "/")
+	_, err = os.Stat("files/" + SecondPath + Year + Month + "/")
 	if os.IsNotExist(err) {
-		errDir2 := os.MkdirAll("files/"+SecondPath+Name+"_"+Year+Month+"/", 0777)
+		errDir2 := os.MkdirAll("files/"+Year+Month+"/", 0777)
 		check("Error creating files directory: ", errDir2)
 	}
 
@@ -78,7 +64,7 @@ func begin(URL string, SecondPath string, Year string, Month string, Name string
 func DownloadFile(filename string, u string, SecondPath string, Year string, Month string, Name string) {
 	//Open file and append if it exist. If not create it and write.
 
-	newFile, err := os.OpenFile("files/"+SecondPath+Name+"_"+Year+Month+"/"+filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	newFile, err := os.OpenFile("files/"+Year+Month+"/"+filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	check("Error opening file! ", err)
 	defer newFile.Close()
 	response, err := http.Get(u)
@@ -155,9 +141,8 @@ func main() {
 	for _, j := range links {
 
 		if strings.HasPrefix(j, strings.ToLower(Name)) {
-			fmt.Printf("The %d one start.", k+1)
+			fmt.Printf("The %d one start. %s", k+1, FilePath+j)
 			DownloadFile(j, FilePath+j, SecondPath, Year, Month, Name)
-
 			k = k + 1
 		}
 	}
