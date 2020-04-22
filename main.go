@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"io"
 	"log"
@@ -9,10 +8,8 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"path"
 	"strings"
 
-	"github.com/PuerkitoBio/goquery"
 	"github.com/dustin/go-humanize"
 	"github.com/jackdanger/collectlinks"
 )
@@ -56,54 +53,59 @@ func (wc WriteCounter) PrintProgress() {
 
 //Func saveImage parse a file and reads line by line
 //A for loop is used to query and download images from their URLs.
-func saveImage(URL string) {
-	web, err := url.Parse(URL)
-	check("Error parsing URL ", err)
-	readFile, err := os.Open("imgs.txt")
-	fileScanner := bufio.NewScanner(readFile)
-	fileScanner.Split(bufio.ScanLines)
-	var fileTextLines []string
+// func saveImage(URL string) {
+// 	web, err := url.Parse(URL)
+// 	check("Error parsing URL ", err)
+// 	readFile, err := os.Open("imgs.txt")
+// 	fileScanner := bufio.NewScanner(readFile)
+// 	fileScanner.Split(bufio.ScanLines)
+// 	var fileTextLines []string
 
-	for fileScanner.Scan() {
-		fileTextLines = append(fileTextLines, fileScanner.Text())
-	}
+// 	for fileScanner.Scan() {
+// 		fileTextLines = append(fileTextLines, fileScanner.Text())
+// 	}
 
-	for _, eachline := range fileTextLines {
-		imgfile := path.Base(eachline)
-		res, err := http.Get("https://" + web.Host + eachline)
-		check("", err)
-		file, err := os.OpenFile(imgfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0777)
-		io.Copy(file, res.Body)
-		check("", err)
-		file.Close()
+// 	for _, eachline := range fileTextLines {
+// 		imgfile := path.Base(eachline)
+// 		res, err := http.Get("https://" + web.Host + eachline)
+// 		check("", err)
+// 		file, err := os.OpenFile(imgfile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0777)
+// 		io.Copy(file, res.Body)
+// 		check("", err)
+// 		file.Close()
 
-	}
-}
+// 	}
+// }
 
 //init func initializes directory creation and log tracing.
-func begin(URL string) {
+func begin(URL string, SecondPath string, Year string, Month string, Name string) {
 	//URL := os.Args[2]
 	dir, err := url.Parse(URL)
-	_, err = os.Stat("links/" + dir.Host + dir.Path + "/")
+	_, err = os.Stat("files/" + SecondPath + Name + "_" + Year + Month + "/")
 	if os.IsNotExist(err) {
-		errDir := os.MkdirAll("links/"+dir.Host+dir.Path+"/", 0777)
-		check("Error creating links directory: ", errDir)
+		errDir2 := os.MkdirAll("files/"+SecondPath+Name+"_"+Year+Month+"/", 0777)
+		check("Error creating files directory: ", errDir2)
 	}
-	_, err = os.Stat("pages/" + dir.Host + "/")
-	if os.IsNotExist(err) {
-		errDir2 := os.MkdirAll("pages/"+dir.Host+"/", 0777)
-		check("Error creating pages directory: ", errDir2)
-	}
+	// _, err = os.Stat("links/" + dir.Host + dir.Path + "/")
+	// if os.IsNotExist(err) {
+	// 	errDir := os.MkdirAll("links/"+dir.Host+dir.Path+"/", 0777)
+	// 	check("Error creating links directory: ", errDir)
+	// }
+	// _, err = os.Stat("pages/" + dir.Host + "/")
+	// if os.IsNotExist(err) {
+	// 	errDir2 := os.MkdirAll("pages/"+dir.Host+"/", 0777)
+	// 	check("Error creating pages directory: ", errDir2)
+	// }
 	_, err = os.Stat("logs/" + dir.Host + "/")
 	if os.IsNotExist(err) {
 		errDir2 := os.MkdirAll("logs/"+dir.Host+"/", 0777)
 		check("Error creating log directory: ", errDir2)
 	}
-	_, err = os.Stat("imgs/" + dir.Host + dir.Path + "/")
-	if os.IsNotExist(err) {
-		errDir3 := os.MkdirAll("imgs/"+dir.Host+dir.Path, 0777)
-		check("Error creating imgs directory: ", errDir3)
-	}
+	// _, err = os.Stat("imgs/" + dir.Host + dir.Path + "/")
+	// if os.IsNotExist(err) {
+	// 	errDir3 := os.MkdirAll("imgs/"+dir.Host+dir.Path, 0777)
+	// 	check("Error creating imgs directory: ", errDir3)
+	// }
 	//Log to file
 	file, e := os.OpenFile("logs/"+dir.Host+"/"+"file.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0777)
 	if e != nil {
@@ -116,7 +118,7 @@ func begin(URL string) {
 
 }
 
-func DownloadFile(filename string, u string) {
+func DownloadFile(filename string, u string, SecondPath string, Year string, Month string, Name string) {
 	//Load command line arguments
 	// if len(os.Args) != 3 {
 	// 	fmt.Println("Usage: " + os.Args[0] + " <filename_to_save> <target_URL>")
@@ -131,7 +133,7 @@ func DownloadFile(filename string, u string) {
 
 	//Open file and append if it exist. If not create it and write.
 
-	newFile, err := os.OpenFile("pages/"+WebSiteHost+"/"+filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	newFile, err := os.OpenFile("files/"+SecondPath+Name+"_"+Year+Month+"/"+filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	check("Error opening file! ", err)
 	defer newFile.Close()
 	response, err := http.Get(u)
@@ -164,43 +166,43 @@ func DownloadFile(filename string, u string) {
 
 	//List all hyperlinks in the downloaded page.
 	//We look for href tags only.
-	links, err := goquery.NewDocumentFromReader(response.Body)
-	check("Error loading links: ", err)
+	// links, err := goquery.NewDocumentFromReader(response.Body)
+	// check("Error loading links: ", err)
 
 	//Find all links and save to file
-	links.Find("a").Each(func(i int, s *goquery.Selection) {
-		href, exists := s.Attr("href")
-		if exists {
-			web, err := url.Parse(u)
-			check("Error parsing URL ", err)
-			// If the file doesn't exist, create it, or else append to the file
-			f, err := os.OpenFile("links/"+web.Host+web.Path+"/"+"link.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0777)
-			check("Can't write log file to disk.", err)
-			_, err = f.Write([]byte(href + "\n"))
-			f.Close() // ignore error; Write error takes precedences
-			check("Error writing bytes to file: ", err)
-		}
-	})
+	// links.Find("a").Each(func(i int, s *goquery.Selection) {
+	// 	href, exists := s.Attr("href")
+	// 	if exists {
+	// 		web, err := url.Parse(u)
+	// 		check("Error parsing URL ", err)
+	// 		// If the file doesn't exist, create it, or else append to the file
+	// 		f, err := os.OpenFile("links/"+web.Host+web.Path+"/"+"link.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0777)
+	// 		check("Can't write log file to disk.", err)
+	// 		_, err = f.Write([]byte(href + "\n"))
+	// 		f.Close() // ignore error; Write error takes precedences
+	// 		check("Error writing bytes to file: ", err)
+	// 	}
+	// })
 	//Find all images URLs and save to file
 	//We loop over each line of saved file
 	//to download each image by its URL
-	links.Find("img").Each(func(i int, s *goquery.Selection) {
-		src, exists := s.Attr("src")
-		if exists {
-			web, err := url.Parse(u)
-			check("Error parsing URL ", err)
-			// If the file doesn't exist, create it, or else append to the file
-			f, err := os.OpenFile("imgs/"+web.Host+web.Path+"/"+"imgs.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0777)
-			check("Can't write image to disk.", err)
-			_, err = f.Write([]byte(src + "\n"))
-			f.Close() // ignore error; Write error takes precedences
-			check("Error writing bytes to file: ", err)
+	// links.Find("img").Each(func(i int, s *goquery.Selection) {
+	// 	src, exists := s.Attr("src")
+	// 	if exists {
+	// 		web, err := url.Parse(u)
+	// 		check("Error parsing URL ", err)
+	// 		// If the file doesn't exist, create it, or else append to the file
+	// 		f, err := os.OpenFile("imgs/"+web.Host+web.Path+"/"+"imgs.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0777)
+	// 		check("Can't write image to disk.", err)
+	// 		_, err = f.Write([]byte(src + "\n"))
+	// 		f.Close() // ignore error; Write error takes precedences
+	// 		check("Error writing bytes to file: ", err)
 
-		}
+	// 	}
 
-		// saveImage()
+	// 	saveImage()
 
-	})
+	// })
 	check("", err)
 	log.Println("\nCrawling finished.\n Success!")
 }
@@ -220,7 +222,7 @@ func main() {
 
 	FilePath := URL + "/" + SecondPath + "/" + Year + "." + Month + "/" + Name + "/"
 
-	begin(FilePath)
+	begin(FilePath, SecondPath, Year, Month, Name)
 	// FilePath := "http://archive.routeviews.org/bgpdata/2003.03/UPDATES/"
 	// ./main http://archive.routeviews.org bgpdata 2003 03 UPDATES
 
@@ -231,7 +233,7 @@ func main() {
 
 		if strings.HasPrefix(j, "updates") {
 			fmt.Println(FilePath + j)
-			DownloadFile(j, FilePath+j)
+			DownloadFile(j, FilePath+j, SecondPath, Year, Month, Name)
 			k = k + 1
 			if k == 5 {
 				break
