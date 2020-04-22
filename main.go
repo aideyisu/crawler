@@ -10,6 +10,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/dustin/go-humanize"
 	"github.com/jackdanger/collectlinks"
 )
@@ -34,6 +35,7 @@ func (wc *WriteCounter) Write(p []byte) (int, error) {
 	return n, nil
 }
 
+// PrintProgress 打印中间过程
 func (wc WriteCounter) PrintProgress() {
 	// Clear the line by using a character return to go back to the start and remove
 	// the remaining characters by filling it with spaces
@@ -86,6 +88,7 @@ func DownloadFile(filename string, u string, SecondPath string, Year string, Mon
 		os.Exit(1)
 	}
 	if response.StatusCode == 200 {
+		fmt.Println("Start download " + u)
 		web, err := url.Parse(u)
 		check("Error parsing URL ", err)
 
@@ -105,9 +108,26 @@ func DownloadFile(filename string, u string, SecondPath string, Year string, Mon
 
 	response, err = http.Get(u)
 	defer response.Body.Close()
-
+	//List all hyperlinks in the downloaded page.
+	//We look for href tags only.
+	links, err := goquery.NewDocumentFromReader(response.Body)
+	check("Error loading links: ", err)
+	// Find all links and save to file
+	links.Find("a").Each(func(i int, s *goquery.Selection) {
+		href, exists := s.Attr("href")
+		if exists {
+			web, err := url.Parse(u)
+			check("Error parsing URL ", err)
+			// If the file doesn't exist, create it, or else append to the file
+			f, err := os.OpenFile("links/"+web.Host+web.Path+"/"+"link.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0777)
+			check("Can't write log file to disk.", err)
+			_, err = f.Write([]byte(href + "\n"))
+			f.Close() // ignore error; Write error takes precedences
+			check("Error writing bytes to file: ", err)
+		}
+	})
 	check("", err)
-	log.Println("\nCrawling finished.\n Success!")
+	log.Println("\nCrawling finished.\t Success!\t" + u)
 }
 
 func main() {
@@ -134,13 +154,11 @@ func main() {
 	k := 0
 	for _, j := range links {
 
-		if strings.HasPrefix(j, "updates") {
-			fmt.Println(FilePath + j)
+		if strings.HasPrefix(j, strings.ToLower(Name)) {
+			fmt.Printf("The %d one start.", k+1)
 			DownloadFile(j, FilePath+j, SecondPath, Year, Month, Name)
+
 			k = k + 1
-			if k == 5 {
-				break
-			}
 		}
 	}
 }
