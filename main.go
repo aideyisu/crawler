@@ -35,7 +35,6 @@ func (wc *WriteCounter) Write(p []byte) (int, error) {
 
 //init func initializes directory creation and log tracing.
 func begin(URL string, SecondPath string, Year string, Month string, Name string) {
-
 	dir, err := url.Parse(URL)
 	_, err = os.Stat("files/" + SecondPath + Year + Month + "/")
 	if os.IsNotExist(err) {
@@ -58,9 +57,9 @@ func begin(URL string, SecondPath string, Year string, Month string, Name string
 	log.SetPrefix("LOG: ")
 	log.SetFlags(log.Ldate | log.Lmicroseconds | log.Llongfile)
 	log.Println("init started")
-
 }
 
+// DownloadFile 下载文件
 func DownloadFile(filename string, u string, SecondPath string, Year string, Month string, Name string) {
 	//Open file and append if it exist. If not create it and write.
 
@@ -80,7 +79,7 @@ func DownloadFile(filename string, u string, SecondPath string, Year string, Mon
 
 		ip, err := net.LookupIP(web.Host)
 		check("Error retrieving website's IP address. ", err)
-		log.Printf("Connected to %v.\nIP address %v\n", web.Host, ip)
+		log.Printf("Connected to %v.\tIP address %v\n", web.Host, ip)
 	}
 
 	defer response.Body.Close()
@@ -141,7 +140,7 @@ func main() {
 	for _, j := range links {
 
 		if strings.HasPrefix(j, strings.ToLower(Name)) {
-			fmt.Printf("The %d one start. %s", k+1, FilePath+j)
+			log.Printf("The %d one start. %s\n", k+1, FilePath+j)
 			DownloadFile(j, FilePath+j, SecondPath, Year, Month, Name)
 			k = k + 1
 		}
