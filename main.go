@@ -130,7 +130,7 @@ func main() {
 	FilePath := URL + "/" + SecondPath + "/" + Year + "." + Month + "/" + Name + "/"
 
 	begin(FilePath, SecondPath, Year, Month, Name)
-	// FilePath := "http://archive.routeviews.org/bgpdata/2003.03/UPDATES/"
+	// FilePath := "http://archive.routeviews.org/bgpdata/2001.10/UPDATES/"
 	// ./main http://archive.routeviews.org bgpdata 2001 10 RIBS
 
 	resp, _ := http.Get(FilePath)
@@ -140,7 +140,8 @@ func main() {
 
 		if strings.HasPrefix(j, strings.ToLower(Name[:len(Name)-1])) {
 			log.Printf("The %d one start. %s\n", k+1, FilePath+j)
-			go DownloadFile(j, FilePath+j, SecondPath, Year, Month, Name)
+			fmt.Printf("The %d one start. %s\n", k+1, FilePath+j)
+			DownloadFile(j, FilePath+j, SecondPath, Year, Month, Name)
 			k = k + 1
 		}
 	}
