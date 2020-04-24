@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/jackdanger/collectlinks"
@@ -143,6 +144,7 @@ func main() {
 			fmt.Printf("The %d one start. %s\n", k+1, FilePath+j)
 			DownloadFile(j, FilePath+j, SecondPath, Year, Month, Name)
 			k = k + 1
+			time.Sleep(time.Second * 10)
 		}
 	}
 	fmt.Println("Finished " + SecondPath + Year + Month + Name)
