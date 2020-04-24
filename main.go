@@ -73,7 +73,6 @@ func DownloadFile(filename string, u string, SecondPath string, Year string, Mon
 		os.Exit(1)
 	}
 	if response.StatusCode == 200 {
-		fmt.Println("Start download " + u)
 		web, err := url.Parse(u)
 		check("Error parsing URL ", err)
 
@@ -117,8 +116,8 @@ func DownloadFile(filename string, u string, SecondPath string, Year string, Mon
 
 func main() {
 	if len(os.Args) != 6 {
-		fmt.Println("Usage: " + os.Args[0] + " <filename_to_save> <target_URL>")
-		fmt.Println("Example: " + os.Args[0] + " http://archive.routeviews.org/bgpdata/2001.10/UPDATES/ ")
+		fmt.Println("Usage: " + os.Args[0] + " <fileurl_to_save> <target_secURL> <Year> <Month> <Name>")
+		fmt.Println("Example: " + " ./main http://archive.routeviews.org bgpdata 2003 03 UPDATES")
 		log.Fatalln("Not right number arguments passed!")
 		os.Exit(1)
 	}
@@ -132,17 +131,18 @@ func main() {
 
 	begin(FilePath, SecondPath, Year, Month, Name)
 	// FilePath := "http://archive.routeviews.org/bgpdata/2003.03/UPDATES/"
-	// ./main http://archive.routeviews.org bgpdata 2003 03 UPDATES
+	// ./main http://archive.routeviews.org bgpdata 2001 10 RIBS
 
 	resp, _ := http.Get(FilePath)
 	links := collectlinks.All(resp.Body)
 	k := 0
 	for _, j := range links {
 
-		if strings.HasPrefix(j, strings.ToLower(Name)) {
+		if strings.HasPrefix(j, strings.ToLower(Name[:len(Name)-1])) {
 			log.Printf("The %d one start. %s\n", k+1, FilePath+j)
-			DownloadFile(j, FilePath+j, SecondPath, Year, Month, Name)
+			go DownloadFile(j, FilePath+j, SecondPath, Year, Month, Name)
 			k = k + 1
 		}
 	}
+	fmt.Println("Finished " + SecondPath + Year + Month + Name)
 }
