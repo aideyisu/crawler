@@ -60,11 +60,26 @@ func begin(URL string, SecondPath string, Year string, Month string, Name string
 	log.Println("init started")
 }
 
+// CheckDay 下载文件前检查是否有日期对应路径
+func CheckDay(SecondPath string, Year string, Month string, filename string) string {
+	Indexs := strings.Index(filename, Year+Month)
+	// fmt.Println(Indexs) //1
+	// fmt.Println(filename[Indexs+6 : Indexs+8])
+	Day := filename[Indexs+6 : Indexs+8]
+	fmt.Println(Day)
+	_, err := os.Stat("files/" + SecondPath + Year + Month + "/" + Day + "/")
+	if os.IsNotExist(err) {
+		errDir2 := os.MkdirAll("files/"+Year+Month+"/"+Day+"/", 0777)
+		check("Error creating files directory: ", errDir2)
+	}
+	return Day
+}
+
 // DownloadFile 下载文件
 func DownloadFile(filename string, u string, SecondPath string, Year string, Month string, Name string) {
 	//Open file and append if it exist. If not create it and write.
-
-	newFile, err := os.OpenFile("files/"+Year+Month+"/"+filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	Day := CheckDay(SecondPath, Year, Month, filename)
+	newFile, err := os.OpenFile("files/"+Year+Month+"/"+Day+"/"+filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	check("Error opening file! ", err)
 	defer newFile.Close()
 	response, err := http.Get(u)
@@ -144,6 +159,9 @@ func main() {
 			DownloadFile(j, FilePath+j, SecondPath, Year, Month, Name)
 			k = k + 1
 			time.Sleep(time.Second * 35)
+			if k == 2 {
+				break
+			}
 		}
 	}
 	time.Sleep(time.Minute * 7)
