@@ -138,14 +138,14 @@ func main() {
 	links := collectlinks.All(resp.Body)
 	k := 0
 	for _, j := range links {
-
 		if strings.HasPrefix(j, strings.ToLower(Name[:len(Name)-1])) {
 			log.Printf("The %d one start. %s\n", k+1, FilePath+j)
 			fmt.Printf("The %d one start. %s\n", k+1, FilePath+j)
 			DownloadFile(j, FilePath+j, SecondPath, Year, Month, Name)
 			k = k + 1
-			time.Sleep(time.Second * 10)
+			time.Sleep(time.Second * 35)
 		}
 	}
+	time.Sleep(time.Minute * 7)
 	fmt.Println("Finished " + SecondPath + Year + Month + Name)
 }
