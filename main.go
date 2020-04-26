@@ -159,9 +159,6 @@ func main() {
 			DownloadFile(j, FilePath+j, SecondPath, Year, Month, Name)
 			k = k + 1
 			time.Sleep(time.Second * 35)
-			if k == 2 {
-				break
-			}
 		}
 	}
 	time.Sleep(time.Minute * 7)
