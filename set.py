@@ -7,21 +7,22 @@ try:
     y, m = datetime.datetime.now().year,datetime.datetime.now().month
     # ./main http://archive.routeviews.org bgpdata 2001 10 RIBS
     while cyear != y or cmonth != m:
-        if cmonth >= 10:
+        if m >= 10:
             f.write("./main http://archive.routeviews.org bgpdata " +
-                    str(cyear) + " " + str(cmonth) + " RIBS\n")
+                    str(y) + " " + str(m) + " RIBS\n")
             f.write("./main http://archive.routeviews.org bgpdata " +
-                    str(cyear) + " " + str(cmonth) + " UPDATES\n")
+                    str(y) + " " + str(m) + " UPDATES\n")
         else:
             f.write("./main http://archive.routeviews.org bgpdata " +
-                    str(cyear) + " 0" + str(cmonth) + " RIBS\n")
+                    str(y) + " 0" + str(m) + " RIBS\n")
             f.write("./main http://archive.routeviews.org bgpdata " +
-                    str(cyear) + " 0" + str(cmonth) + " UPDATES\n")
-        if cmonth < 12:
-            cmonth +=1
-        elif cmonth == 12:
-            cmonth = 1
-            cyear += 1
+                    str(y) + " 0" + str(m) + " UPDATES\n")
+        print(y, m)
+        if m <= 12 and m > 1:
+            m -=1
+        elif m == 1:
+            m = 12
+            y -= 1
 finally:
     if f:
         f.close()
