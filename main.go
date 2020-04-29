@@ -178,10 +178,10 @@ func main() {
 			DownloadFile(j, FilePath+j, SecondPath, Year, Month, Name)
 			k = k + 1
 			if k%25 == 24 {
-				time.Sleep(time.Second * 100)
+				time.Sleep(time.Second * 160)
 			}
 		}
 	}
-	time.Sleep(time.Minute * 8)
+	time.Sleep(time.Minute * 7)
 	fmt.Println("Finished " + SecondPath + Year + Month + Name)
 }
