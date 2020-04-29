@@ -57,7 +57,7 @@ func begin(URL string, SecondPath string, Year string, Month string, Name string
 	log.SetOutput(file)
 	log.SetPrefix("LOG: ")
 	log.SetFlags(log.Ldate | log.Lmicroseconds | log.Llongfile)
-	log.Println("init started")
+	log.Println("init started" + URL + " " + SecondPath + " " + Year + " " + Month + " " + Name)
 }
 
 // CheckDay 下载文件前检查是否有日期对应路径
@@ -75,10 +75,28 @@ func CheckDay(SecondPath string, Year string, Month string, filename string) str
 	return Day
 }
 
+// PathExists 判断路径是否存在
+func PathExists(path string) bool {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true
+	}
+	if os.IsNotExist(err) {
+		return false
+	}
+	return false
+}
+
 // DownloadFile 下载文件
 func DownloadFile(filename string, u string, SecondPath string, Year string, Month string, Name string) {
 	//Open file and append if it exist. If not create it and write.
 	Day := CheckDay(SecondPath, Year, Month, filename)
+
+	if PathExists("files/" + Year + Month + "/" + Day + "/" + filename) {
+		log.Println("All ready exist : files/" + Year + Month + "/" + Day + "/" + filename)
+		time.Sleep(time.Second * 5)
+		return
+	}
 	newFile, err := os.OpenFile("files/"+Year+Month+"/"+Day+"/"+filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	check("Error opening file! ", err)
 	defer newFile.Close()
@@ -128,6 +146,7 @@ func DownloadFile(filename string, u string, SecondPath string, Year string, Mon
 	})
 	check("", err)
 	log.Println("\nCrawling finished.\t Success!\t" + u)
+	time.Sleep(time.Second * 35)
 }
 
 func main() {
@@ -158,9 +177,11 @@ func main() {
 			fmt.Printf("The %d one start. %s\n", k+1, FilePath+j)
 			DownloadFile(j, FilePath+j, SecondPath, Year, Month, Name)
 			k = k + 1
-			time.Sleep(time.Second * 35)
+			if k%25 == 24 {
+				time.Sleep(time.Second * 100)
+			}
 		}
 	}
-	time.Sleep(time.Minute * 7)
+	time.Sleep(time.Minute * 8)
 	fmt.Println("Finished " + SecondPath + Year + Month + Name)
 }
