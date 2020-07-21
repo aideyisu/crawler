@@ -94,7 +94,7 @@ func DownloadFile(filename string, u string, SecondPath string, Year string, Mon
 
 	if PathExists("files/" + Year + Month + "/" + Day + "/" + filename) {
 		log.Println("All ready exist : files/" + Year + Month + "/" + Day + "/" + filename)
-		time.Sleep(time.Second * 5)
+		time.Sleep(time.Second * 1)
 		return
 	}
 	newFile, err := os.OpenFile("files/"+Year+Month+"/"+Day+"/"+filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
